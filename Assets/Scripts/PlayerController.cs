@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+
 public class PlayerController : MonoBehaviour
 {
     [Header("Referencies")]
@@ -18,7 +19,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private float playerHeight = 2;
     [SerializeField] private float playerRadius = 0.4f;
-    [SerializeField] private float jumpForce = 10f;
+
+    [Header("Jumping")]
+    [SerializeField] private float fallMultiplier = 2.5f;
+    [SerializeField] private float lowJumpMultiplier = 2f;
+    [SerializeField] private float jumpForce = 5f;
 
     private Vector3 inputPlayer;
     private Vector2 mouseInput;
@@ -48,6 +53,7 @@ public class PlayerController : MonoBehaviour
     {
         MoveCharacter();
         MoveCamara();
+        Debug.Log($"On Ground: {isOnGround}");
     }
 
     private void MoveCharacter()
@@ -75,7 +81,12 @@ public class PlayerController : MonoBehaviour
     private void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && GroundChecker())
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.linearVelocity += Vector3.up * jumpForce;
+
+        if (rb.linearVelocity.y < 0)
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        else if (rb.linearVelocity.y > 0 && !Input.GetKey(KeyCode.Space))
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
     }
 
     private bool GroundChecker()
